@@ -13,8 +13,10 @@ use Illuminate\Http\RedirectResponse;
 //import Facade "Storage"
 use Illuminate\Support\Facades\Storage;
 
+use App\Models\Post;
+
 class PostController extends Controller
-{    
+{
     /**
      * index
      *
@@ -23,10 +25,11 @@ class PostController extends Controller
     public function index(): View
     {
         //get posts
-        Post::latest()->paginate(5);
+        $posts = Post::latest()->paginate(5);
+        // Post::latest()->paginate(5);
 
         //render view with posts
-        return view('index', compact('posts'));
+        return view('posts.index', compact('posts'));
     }
 
     /**
@@ -36,16 +39,16 @@ class PostController extends Controller
      */
     public function create(): View
     {
-        return view('create');
+        return view('posts.create');
     }
- 
+
     /**
      * store
      *
      * @param  mixed $request
      * @return RedirectResponse
      */
-    public function store($request): RedirectResponse
+    public function store(request $request): RedirectResponse
     {
         //validate form
         $this->validate($request, [
@@ -68,7 +71,7 @@ class PostController extends Controller
         //redirect to index
         return redirect()->route('posts.index')->with(['success' => 'Data Berhasil Disimpan!']);
     }
-    
+
     /**
      * show
      *
@@ -98,7 +101,7 @@ class PostController extends Controller
         //render view with post
         return view('posts.edit', compact('post'));
     }
-        
+
     /**
      * update
      *
@@ -154,13 +157,20 @@ class PostController extends Controller
      * @param  mixed $post
      * @return void
      */
-    public function destroy($post): RedirectResponse
+    public function destroy(Post $post): RedirectResponse
     {
         //get post by ID
-        $post = Post::findOrFail();
+        // $post = Post::findOrFail();
+        $post = Post::findOrFail($post->id);
+
+
 
         //delete image
-        Storage::delete('public/posts/'. $post->image);
+        // Storage::delete('public/posts/'. $post->image);
+        if (!empty($post->image)) {
+            // Menghapus gambar
+            Storage::delete('public/posts/' . $post->image);
+        }
 
         //delete post
         $post->delete();
